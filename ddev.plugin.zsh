@@ -1,15 +1,3 @@
-ZSH_PLUGIN_DDEV_TOOLS=(composer yarn npm npx ${ZSH_PLUGIN_DDEV_TOOLS})
-
-for tool in $ZSH_PLUGIN_DDEV_TOOLS; do
-    "${tool}"() {
-        if [[ -f '.ddev/config.yaml' ]]; then
-            ddev exec -- "${funcstack}" "$@"
-        else
-            "$(/usr/bin/which "${funcstack}")" "$@"
-        fi
-    }
-done
-
 dev() {
     if [[ $# == 0 ]]; then
         ddev ssh
@@ -39,3 +27,13 @@ ddev-install() {
 ddev-update() {
     ddev-install
 }
+
+for tool in $ZSH_PLUGIN_DDEV_TOOLS; do
+    "${tool}"() {
+        if [[ -f '.ddev/config.yaml' ]]; then
+            ddev exec -- "${funcstack}" "$@"
+        else
+            "$(/usr/bin/which "${funcstack}")" "$@"
+        fi
+    }
+done
