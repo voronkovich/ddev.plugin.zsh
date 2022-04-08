@@ -42,12 +42,46 @@ ddev-upgrade() {
     ddev-install
 }
 
-for tool in $ZSH_PLUGIN_DDEV_TOOLS; do
+declare -g -A _zsh_plugin_ddev_tools=()
+
+ddev-use-tool() {
+    local tool="${1}"
+
+    if [[ $# == 0 ]]; then
+        for tool in "${(@k)_zsh_plugin_ddev_tools}"; do
+            echo "${tool}"
+        done
+
+        return
+    fi
+
+    if [[ -v "_zsh_plugin_ddev_tools[${tool}]" ]]; then
+        return
+    fi
+
+    _zsh_plugin_ddev_tools[${tool}]="$(command -v "${tool}")"
+
     "${tool}"() {
+        local tool="${funcstack[-1]}"
+
         if [[ -f '.ddev/config.yaml' ]]; then
-            ddev exec -- "${funcstack}" "$@"
-        else
-            "$(/usr/bin/which "${funcstack}")" "$@"
+            ddev exec -- "${tool}" "$@"
+
+            return
         fi
+
+        local executable="${_zsh_plugin_ddev_tools[${tool}]}"
+
+        if [[ -z "${executable}" ]]; then
+            echo "DDEV: Local \"${tool}\" is not available." >&2
+
+            return 1
+        fi
+
+        "${executable}" "$@"
     }
+}
+
+for tool in $ZSH_PLUGIN_DDEV_TOOLS; do
+    ddev-use-tool "${tool}"
 done
