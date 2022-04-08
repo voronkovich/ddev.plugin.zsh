@@ -42,6 +42,20 @@ ddev-upgrade() {
     ddev-install
 }
 
+ddev-project-root() {
+    local dir="${PWD}"
+
+    while [[ -n "${dir}" ]]; do
+        if [[ -e "${dir}/.ddev/config.yaml" ]]; then
+            echo "${dir}" && return 0
+        fi
+
+        dir="${dir%/*}"
+    done
+
+    return 1
+}
+
 declare -g -A _zsh_plugin_ddev_tools=()
 
 ddev-use-tool() {
@@ -64,7 +78,7 @@ ddev-use-tool() {
     "${tool}"() {
         local tool="${funcstack[-1]}"
 
-        if [[ -f '.ddev/config.yaml' ]]; then
+        if ddev-project-root > /dev/null; then
             ddev exec -- "${tool}" "$@"
 
             return
