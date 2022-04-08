@@ -21,10 +21,24 @@ HELP
 }
 
 ddev-install() {
-    curl https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh | bash
+    if command -v brew > /dev/null; then
+        brew install 'drud/ddev/ddev'
+
+        return
+    fi
+
+    wget -q -O - https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh | bash
 }
 
-ddev-update() {
+ddev-upgrade() {
+    if command -v brew > /dev/null; then
+        if brew list --version 'drud/ddev/ddev' > /dev/null; then
+            brew upgrade 'drud/ddev/ddev'
+
+            return
+        fi
+    fi
+
     ddev-install
 }
 
