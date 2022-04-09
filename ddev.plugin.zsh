@@ -73,7 +73,7 @@ ddev-use-tool() {
         return
     fi
 
-    _zsh_plugin_ddev_tools[${tool}]="$(command -v "${tool}")"
+    _zsh_plugin_ddev_tools[${tool}]="$(/usr/bin/which "${tool}")"
 
     "${tool}"() {
         local tool="${funcstack[-1]}"
@@ -84,7 +84,7 @@ ddev-use-tool() {
             return
         fi
 
-        local executable="${_zsh_plugin_ddev_tools[${tool}]}"
+        local executable="$(/usr/bin/which "${tool}")"
 
         if [[ -z "${executable}" ]]; then
             echo "DDEV: Local \"${tool}\" is not available." >&2
