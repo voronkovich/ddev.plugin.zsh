@@ -92,6 +92,12 @@ ddev-use-tool() {
             return 1
         fi
 
+        if [[ "${executable}" == "${tool}" ]]; then
+            command "${executable}" "$@"
+
+            return
+        fi
+
         "${executable}" "$@"
     }
 }
