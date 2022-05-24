@@ -1,10 +1,4 @@
 dev() {
-    if [[ $# == 0 ]]; then
-        ddev ssh
-
-        return
-    fi
-
     if [[ $1 =~ '^(-h|--help)$' ]]; then
         cat <<HELP
 Wrapper for "ddev exec"
@@ -16,6 +10,26 @@ HELP
 
         return
     fi
+
+    if [[ $# == 0 ]]; then
+        ddev ssh
+
+        return
+    fi
+
+    case $1 in
+        start )
+            ddev start && ddev launch &>/dev/null
+            return
+            ;;
+        stop )
+            ddev stop
+            return
+            ;;
+        mails )
+            ddev launch -m &>/dev/null
+            return
+    esac
 
     ddev exec -- "$@"
 }
