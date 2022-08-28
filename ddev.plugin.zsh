@@ -26,6 +26,10 @@ HELP
             ddev stop
             return
             ;;
+        restart )
+            ddev restart
+            return
+            ;;
         open )
             ddev launch &>/dev/null
             return
