@@ -26,6 +26,10 @@ HELP
             ddev stop
             return
             ;;
+        open )
+            ddev launch &>/dev/null
+            return
+            ;;
         mails )
             ddev launch -m &>/dev/null
             return
