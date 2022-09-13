@@ -17,29 +17,35 @@ HELP
         return
     fi
 
-    case $1 in
+    local -r cmd="${1}" && shift
+
+    case "${cmd}" in
         start )
-            ddev start && ddev launch &>/dev/null
+            ddev start "${@}" && ddev launch &>/dev/null
+            return
+            ;;
+        status )
+            ddev status "$@"
             return
             ;;
         stop )
-            ddev stop
+            ddev stop "$@"
             return
             ;;
         restart )
-            ddev restart
+            ddev restart "$@"
             return
             ;;
         open )
-            ddev launch &>/dev/null
+            ddev launch "$@" &>/dev/null
             return
             ;;
         mails )
-            ddev launch -m &>/dev/null
+            ddev launch -m "$@" &>/dev/null
             return
     esac
 
-    ddev exec -- "$@"
+    ddev exec -- "${cmd}" "$@"
 }
 
 ddev-install() {
@@ -64,7 +70,55 @@ ddev-upgrade() {
     ddev-install
 }
 
-ddev-project-root() {
+declare -g -A _zsh_plugin_ddev_tools=()
+
+ddev-tools() {
+    local tool
+
+    if [[ $# == 0 ]]; then
+        for tool in "${(@k)_zsh_plugin_ddev_tools}"; do
+            echo "${tool}"
+        done
+
+        return
+    fi
+
+    for tool in $@; do
+        if [[ -v "_zsh_plugin_ddev_tools[${tool}]" ]]; then
+            continue
+        fi
+
+        _zsh_plugin_ddev_tools[${tool}]="$(which -p "${tool}")"
+
+        "${tool}"() {
+            local tool="${funcstack[-1]}"
+
+            if __dev-project-root &>/dev/null; then
+                ddev exec -- "${tool}" "$@"
+
+                return $?
+            fi
+
+            local executable="${_zsh_plugin_ddev_tools[${tool}]}"
+
+            if [[ -z "${executable}" ]]; then
+                echo "DDEV: Local \"${tool}\" is not available." >&2
+
+                return 1
+            fi
+
+            if [[ "${executable}" == "${tool}" ]]; then
+                "${executable}" "$@"
+
+                return $?
+            fi
+
+            "${executable}" "$@"
+        }
+    done
+}
+
+__dev-project-root() {
     local dir="${PWD}"
 
     while [[ -n "${dir}" ]]; do
@@ -77,53 +131,3 @@ ddev-project-root() {
 
     return 1
 }
-
-declare -g -A _zsh_plugin_ddev_tools=()
-
-ddev-use-tool() {
-    local tool="${1}"
-
-    if [[ $# == 0 ]]; then
-        for tool in "${(@k)_zsh_plugin_ddev_tools}"; do
-            echo "${tool}"
-        done
-
-        return
-    fi
-
-    if [[ -v "_zsh_plugin_ddev_tools[${tool}]" ]]; then
-        return
-    fi
-
-    _zsh_plugin_ddev_tools[${tool}]="$(/usr/bin/which "${tool}")"
-
-    "${tool}"() {
-        local tool="${funcstack[-1]}"
-
-        if ddev-project-root > /dev/null; then
-            ddev exec -- "${tool}" "$@"
-
-            return
-        fi
-
-        local executable="$(/usr/bin/which "${tool}")"
-
-        if [[ -z "${executable}" ]]; then
-            echo "DDEV: Local \"${tool}\" is not available." >&2
-
-            return 1
-        fi
-
-        if [[ "${executable}" == "${tool}" ]]; then
-            command "${executable}" "$@"
-
-            return
-        fi
-
-        "${executable}" "$@"
-    }
-}
-
-for tool in $ZSH_PLUGIN_DDEV_TOOLS; do
-    ddev-use-tool "${tool}"
-done
