@@ -43,13 +43,13 @@ HELP
 }
 
 ddev-install() {
-    if command -v brew > /dev/null; then
-        brew install 'drud/ddev/ddev'
+    if (( $+commands[brew] )); then
+        command brew install 'drud/ddev/ddev'
 
         return
     fi
 
-    wget -q -O - https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh | bash
+    command wget -q -O - https://raw.githubusercontent.com/drud/ddev/master/scripts/install_ddev.sh | bash
 }
 
 ddev-upgrade() {
