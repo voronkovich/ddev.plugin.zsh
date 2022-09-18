@@ -59,7 +59,7 @@ ddev-install() {
 }
 
 ddev-upgrade() {
-    if command -v brew > /dev/null; then
+    if (( $+commands[brew] )); then
         if brew list --version 'drud/ddev/ddev' > /dev/null; then
             brew upgrade 'drud/ddev/ddev'
 
@@ -70,50 +70,18 @@ ddev-upgrade() {
     ddev-install
 }
 
-declare -g -A _zsh_plugin_ddev_tools=()
-
 ddev-tools() {
     local tool
 
-    if [[ $# == 0 ]]; then
-        for tool in "${(@k)_zsh_plugin_ddev_tools}"; do
-            echo "${tool}"
-        done
-
-        return
-    fi
-
     for tool in $@; do
-        if [[ -v "_zsh_plugin_ddev_tools[${tool}]" ]]; then
-            continue
-        fi
-
-        _zsh_plugin_ddev_tools[${tool}]="$(which -p "${tool}")"
-
         "${tool}"() {
-            local tool="${funcstack[-1]}"
-
             if __dev-project-root &>/dev/null; then
-                ddev exec -- "${tool}" "$@"
+                command ddev exec -- "$0" "$@"
 
-                return $?
+                return
             fi
 
-            local executable="${_zsh_plugin_ddev_tools[${tool}]}"
-
-            if [[ -z "${executable}" ]]; then
-                echo "DDEV: Local \"${tool}\" is not available." >&2
-
-                return 1
-            fi
-
-            if [[ "${executable}" == "${tool}" ]]; then
-                "${executable}" "$@"
-
-                return $?
-            fi
-
-            "${executable}" "$@"
+            command "$0" "$@"
         }
     done
 }
