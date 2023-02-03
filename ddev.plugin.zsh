@@ -43,6 +43,11 @@ HELP
         mails )
             ddev launch -m "$@" &>/dev/null
             return
+            ;;
+        dba )
+            ddev launch -p "$@" &>/dev/null
+            return
+            ;;
     esac
 
     ddev exec -- "${cmd}" "$@"
