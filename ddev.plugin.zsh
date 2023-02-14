@@ -45,7 +45,7 @@ HELP
             return
             ;;
         dba )
-            ddev launch -p "$@" &>/dev/null
+            ddev launch -p "${@:-?db=db}" &>/dev/null
             return
             ;;
     esac
