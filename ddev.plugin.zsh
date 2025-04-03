@@ -1,3 +1,7 @@
+alias devs='dev start'
+alias devo='dev open'
+alias devm='dev mails'
+
 dev() {
     if [[ $1 =~ '^(-h|--help)$' ]]; then
         cat <<HELP
@@ -42,10 +46,6 @@ HELP
             ;;
         mails )
             ddev launch -m "$@" &>/dev/null
-            return
-            ;;
-        dba )
-            ddev launch -p "${@:-?db=db}" &>/dev/null
             return
             ;;
     esac
